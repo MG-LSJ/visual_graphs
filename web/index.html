@@ -40,5 +40,14 @@
 			type="application/javascript"
 			onendload="document.getElementById('loader').remove();"
 		></script>
+
+		// show warning if viewing on mobile screen
+		<script>
+			if (window.innerWidth < 768) {
+				alert(
+					"This website is not optimized for mobile view. Please view on a desktop screen."
+				);
+			}
+		</script>
 	</body>
 </html>
