@@ -1,3 +1,5 @@
-# visual_graphs
+# Visual Graphs
 
-A new Flutter project.
+## Description
+
+A Graph Algorithm Visualizer
