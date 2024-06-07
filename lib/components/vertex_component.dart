@@ -8,6 +8,7 @@ import 'package:flame/components.dart';
 import 'package:flame/effects.dart';
 import 'package:flame/events.dart';
 import 'package:flutter/material.dart';
+import 'package:visual_graphs/widgets/vertex_info_box.dart';
 
 class VertexComponent extends ShapeComponent
     with
@@ -73,26 +74,10 @@ class VertexComponent extends ShapeComponent
   void showInfo(BuildContext context) {
     showAdaptiveDialog(
       context: context,
+      barrierDismissible: true,
+      useSafeArea: true,
       builder: (BuildContext context) {
-        return AlertDialog.adaptive(
-          title: Text("Node ${vertex.label}"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text("ID: ${vertex.id}"),
-              TextField(
-                decoration: const InputDecoration(
-                  labelText: "Label",
-                ),
-                controller: TextEditingController(text: vertex.label),
-                focusNode: FocusNode()..requestFocus(),
-                onChanged: (value) {
-                  vertex.label = value;
-                },
-              ),
-            ],
-          ),
-        );
+        return VertexInfoBox(vertexComponent: this);
       },
     );
   }

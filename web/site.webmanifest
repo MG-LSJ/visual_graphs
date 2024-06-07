@@ -3,10 +3,10 @@
 	"short_name": "VisualGraphs",
 	"start_url": ".",
 	"display": "standalone",
-	"background_color": "#211F30",
-	"theme_color": "#211F30",
+	"background_color": "#211f30",
+	"theme_color": "#211f30",
 	"description": "A Graph Algorithms Visualizer that helps you visualize and understand the working of various graph algorithms.",
-	"orientation": "landscape-primary",
+	"orientation": "landscape",
 	"prefer_related_applications": false,
 	"icons": [
 		{
