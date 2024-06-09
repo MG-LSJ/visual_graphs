@@ -71,21 +71,14 @@ class _EdgeInfoBoxState extends State<EdgeInfoBox> {
               label: const Text("Reverse"),
               icon: const Icon(Icons.swap_horiz_outlined),
             ),
-          const SizedBox(height: 10),
-          Row(
-            mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              FilledButton(
-                child: const Text("Done"),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          )
         ],
       ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text("Close"),
+        ),
+      ],
     );
   }
 }
