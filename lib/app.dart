@@ -8,8 +8,11 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: const GameScreen(),
-      title: "Algorithm Visualizer",
-      theme: ThemeData.light(),
+      title: "Visual Graphs",
+      theme: ThemeData(
+        useMaterial3: true,
+        brightness: Brightness.light,
+      ),
     );
   }
 }
