@@ -1,12 +1,13 @@
 import 'dart:math' as math;
 import 'dart:ui';
-import 'package:visual_graphs/graph_editor/components/graph_game.dart';
+import 'package:visual_graphs/graph_editor/globals.dart';
+import 'package:visual_graphs/graph_editor/graph_game.dart';
 import 'package:visual_graphs/graph_editor/components/vertex_component.dart';
 import 'package:flame/components.dart';
 
 class HalfEdgeComponent extends ShapeComponent with HasGameRef<GraphGame> {
   VertexComponent v;
-  Color color = const Color(0xFFFFFFFF);
+  Color color = Globals.defaultEdgeColor;
 
   HalfEdgeComponent(this.v) {
     anchor = Anchor.center;

@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'dart:ui' as ui;
 
-import 'package:visual_graphs/graph_editor/components/graph_game.dart';
+import 'package:visual_graphs/graph_editor/globals.dart';
+import 'package:visual_graphs/graph_editor/graph_game.dart';
 import 'package:visual_graphs/graph_editor/models/graph.dart';
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
@@ -21,23 +22,33 @@ class VertexComponent extends ShapeComponent
         SizeProvider {
   Vertex vertex;
 
-  double radius = 20;
-  double _circleRadius = 20;
+  double radius = Globals.defaultVertexRadius;
+  double _circleRadius = Globals.defaultVertexRadius;
 
-  Color color = Colors.blue;
-  Color hoverColor = Colors.lightBlue;
+  Color color = Globals.defaultVertexColor;
+  Color hoverColor = Globals.deafultVertexHoverColor;
+  Color borderColor = Colors.white;
 
-  Color _paintColor = const Color(0x00000000);
+  Color _paintColor = Globals.defaultVertexColor;
   final PaintingStyle _paintPaintingStyle = PaintingStyle.fill;
+
+  bool drawBorder = false;
 
   VertexComponent(position, {required this.vertex})
       : super(
           position: position,
           anchor: Anchor.center,
         ) {
-    _paintColor = color;
     width = radius * 2;
     height = radius * 2;
+
+    paint = Paint();
+  }
+
+  void setColors(Color color, Color hoverColor) {
+    this.color = color;
+    this.hoverColor = hoverColor;
+    onHoverExit();
   }
 
   @override
@@ -69,7 +80,9 @@ class VertexComponent extends ShapeComponent
 
   @override
   void onLongTapDown(TapDownEvent event) {
-    showInfo(gameRef.context);
+    if (gameRef.gameMode == GameMode.defaultMode) {
+      showInfo(gameRef.editorWidgetContext);
+    }
     event.handled = true;
   }
 
@@ -94,9 +107,10 @@ class VertexComponent extends ShapeComponent
         gameRef.mouseCursor = SystemMouseCursors.click;
         break;
       case GameMode.deleteComponent:
-        _paintColor = Colors.redAccent;
+        _paintColor = Globals.defaultDeleteColor;
         _circleRadius = radius + 2;
         gameRef.mouseCursor = SystemMouseCursors.click;
+        drawBorder = true;
         break;
       case GameMode.addEdge:
         _paintColor = hoverColor;
@@ -114,6 +128,7 @@ class VertexComponent extends ShapeComponent
       case GameMode.defaultMode:
       case GameMode.deleteComponent:
         gameRef.mouseCursor = SystemMouseCursors.basic;
+        drawBorder = false;
         break;
       default:
     }
@@ -122,30 +137,34 @@ class VertexComponent extends ShapeComponent
     super.onHoverExit();
   }
 
-  // Rendering
-
-  void refreshPaint() {
-    paint = Paint()
-      ..color = _paintColor
-      ..style = _paintPaintingStyle;
-  }
-
   @override
   void render(Canvas canvas) {
-    refreshPaint();
+    if (drawBorder) {
+      canvas.drawCircle(
+        Offset(width / 2, height / 2),
+        _circleRadius + 1,
+        paint
+          ..color = borderColor
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 3,
+      );
+    }
+
     canvas.drawCircle(
-      Offset(radius, radius),
+      Offset(width / 2, height / 2),
       _circleRadius,
-      paint,
+      paint
+        ..color = _paintColor
+        ..style = _paintPaintingStyle,
     );
     renderText(canvas);
   }
 
   void renderText(Canvas canvas) {
-    var paragraphFontSize = 14.0;
-    var fontSize = paragraphFontSize + 2;
-    var fontWeight = FontWeight.normal;
-    var fontColor = Colors.white;
+    const paragraphFontSize = Globals.defaultVertexFontSize;
+    const fontSize = paragraphFontSize + 2;
+    const fontWeight = FontWeight.normal;
+    const fontColor = Globals.defualtVertexFontColor;
     var text = vertex.label;
 
     final paragraphBuilder = ui.ParagraphBuilder(
@@ -170,7 +189,7 @@ class VertexComponent extends ShapeComponent
     TextPainter hpainter = TextPainter(
       textDirection: TextDirection.ltr,
       text: TextSpan(
-        style: TextStyle(fontSize: fontSize, fontWeight: fontWeight),
+        style: const TextStyle(fontSize: fontSize, fontWeight: fontWeight),
         text: text,
       ),
     )..layout();
@@ -179,7 +198,10 @@ class VertexComponent extends ShapeComponent
 
     canvas.drawParagraph(
       paragraph,
-      ui.Offset(radius - hpainter.width / 2, radius - hpainter.height / 2),
+      ui.Offset(
+        width / 2 - hpainter.width / 2,
+        height / 2 - hpainter.height / 2,
+      ),
     );
   }
 }

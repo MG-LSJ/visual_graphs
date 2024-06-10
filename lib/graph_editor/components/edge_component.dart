@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'dart:ui' as ui;
-import 'package:visual_graphs/graph_editor/components/graph_game.dart';
+import 'package:visual_graphs/graph_editor/globals.dart';
+import 'package:visual_graphs/graph_editor/graph_game.dart';
 import 'package:visual_graphs/graph_editor/models/graph.dart';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
@@ -8,8 +9,8 @@ import 'package:visual_graphs/graph_editor/widgets/edge_info_box.dart';
 
 class EdgeComponent extends ShapeComponent with HasGameRef<GraphGame> {
   Edge edge;
-  Color color = Colors.white;
-  Color hoverColor = Colors.white;
+  Color color = Globals.defaultEdgeColor;
+  Color hoverColor = Globals.defaultEdgeHoverColor;
 
   Path path = Path();
   double labelTextSize = 14;
@@ -23,6 +24,12 @@ class EdgeComponent extends ShapeComponent with HasGameRef<GraphGame> {
     _paintColor = color;
     anchor = Anchor.topLeft;
     position = edge.from.component.position;
+  }
+
+  void setColors(Color color, Color hoverColor) {
+    this.color = color;
+    this.hoverColor = hoverColor;
+    hoverOut();
   }
 
   @override
@@ -61,8 +68,9 @@ class EdgeComponent extends ShapeComponent with HasGameRef<GraphGame> {
   }
 
   void hoverIn() {
-    _paintColor =
-        gameRef.gameMode == GameMode.deleteComponent ? Colors.red : hoverColor;
+    _paintColor = gameRef.gameMode == GameMode.deleteComponent
+        ? Globals.defaultDeleteColor
+        : hoverColor;
     _paintStrokeWidth = 3;
 
     labelTextSize = 16;
@@ -146,8 +154,8 @@ class EdgeComponent extends ShapeComponent with HasGameRef<GraphGame> {
     }
 
     if (edge.isDirected) {
-      var tangent = metric
-          .getTangentForOffset(metric.length - edge.from.component.radius)!;
+      var tangent =
+          metric.getTangentForOffset(metric.length - edge.to.component.radius)!;
       var directionArrowCenterOffset = tangent.position;
       var centerToEndOffset = Offset(
         directionArrowCenterOffset.dx - endPoint.dx,
@@ -270,7 +278,7 @@ class EdgeComponent extends ShapeComponent with HasGameRef<GraphGame> {
       offset,
       15,
       Paint()
-        ..color = const Color(0xFF211F30)
+        ..color = Globals.backgroundColor
         ..style = PaintingStyle.fill,
     );
     canvas.drawParagraph(

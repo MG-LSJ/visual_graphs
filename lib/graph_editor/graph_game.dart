@@ -1,4 +1,6 @@
 import 'package:visual_graphs/graph_editor/components/half_edge_component.dart';
+import 'package:visual_graphs/graph_editor/globals.dart';
+import 'package:visual_graphs/graph_editor/graph_editor.dart';
 import 'package:visual_graphs/graph_editor/models/graph.dart';
 import 'package:flame/components.dart';
 import 'package:flame/events.dart';
@@ -7,14 +9,6 @@ import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:visual_graphs/helpers/stack.dart';
-
-enum GameMode {
-  lockedMode,
-  defaultMode,
-  addVertex,
-  addEdge,
-  deleteComponent,
-}
 
 class GraphGame extends FlameGame
     with PanDetector, TapCallbacks, MouseMovementDetector, KeyboardEvents {
@@ -26,13 +20,14 @@ class GraphGame extends FlameGame
   bool addEdgeModeIsWeighted = false;
   bool addEdgeModeIsDirected = false;
 
-  late BuildContext context;
-  late State parentWidgetState;
+  late BuildContext editorWidgetContext;
+  final State<GraphEditorWidget> editorWidgetState;
 
   SizedStackDS<Graph> undoStack = SizedStackDS(10);
 
-  GraphGame() {
+  GraphGame({required this.editorWidgetState}) {
     graph = Graph();
+    // initiaize graph with some vertices and edges
     graph.addVertex(Vertex(label: "0", position: Vector2(-100, -100)));
     graph.addVertex(Vertex(label: "1", position: Vector2(100, 100)));
     graph.addVertex(Vertex(label: "2", position: Vector2(100, -100)));
@@ -49,7 +44,7 @@ class GraphGame extends FlameGame
         weight: 3,
         isDirected: true));
     graph.addEdge(Edge(
-      from: graph.vertices[2],
+      from: graph.vertices[1],
       to: graph.vertices[3],
       weight: 1,
     ));
@@ -67,13 +62,29 @@ class GraphGame extends FlameGame
   }
 
   @override
-  Color backgroundColor() => const Color(0xFF211F30);
+  Color backgroundColor() => Globals.backgroundColor;
 
   @override
   Future<void> onLoad() async {
     camera = CameraComponent(world: world);
     camera.viewfinder.anchor = Anchor.center;
     add(camera);
+    refreshGraphComponents();
+  }
+
+  void resetGraphColors() {
+    for (var edge in graph.edges) {
+      edge.component.setColors(
+        Globals.defaultEdgeColor,
+        Globals.defaultEdgeHoverColor,
+      );
+    }
+    for (var vertex in graph.vertices) {
+      vertex.component.setColors(
+        Globals.defaultVertexColor,
+        Globals.deafultVertexHoverColor,
+      );
+    }
     refreshGraphComponents();
   }
 
@@ -156,7 +167,7 @@ class GraphGame extends FlameGame
       case GameMode.defaultMode:
         for (var edge in graph.edges) {
           if (edge.component.checkHover(cursorPosition)) {
-            edge.component.showInfo(context);
+            edge.component.showInfo(editorWidgetContext);
             break;
           }
         }
@@ -200,7 +211,7 @@ class GraphGame extends FlameGame
       selectedVertex = null;
       refreshGraphComponents();
       if (addEdgeModeIsWeighted) {
-        edge.component.showInfo(context);
+        edge.component.showInfo(editorWidgetContext);
       }
     }
   }
@@ -233,7 +244,7 @@ class GraphGame extends FlameGame
 
   void saveHistory() {
     // ignore: invalid_use_of_protected_member
-    parentWidgetState.setState(() {});
+    editorWidgetState.setState(() {});
     undoStack.push(graph.clone());
   }
 
@@ -256,6 +267,14 @@ class GraphGame extends FlameGame
           keysPressed.contains(LogicalKeyboardKey.controlRight)) {
         if (keysPressed.contains(LogicalKeyboardKey.keyZ)) {
           undo();
+          // ignore: invalid_use_of_protected_member
+          editorWidgetState.setState(() {});
+          return KeyEventResult.handled;
+        }
+        if (keysPressed.contains(LogicalKeyboardKey.keyS)) {
+          gameMode = GameMode.lockedMode;
+          // ignore: invalid_use_of_protected_member
+          editorWidgetState.setState(() {});
           return KeyEventResult.handled;
         }
       }
@@ -277,25 +296,25 @@ class GraphGame extends FlameGame
           default:
         }
         // ignore: invalid_use_of_protected_member
-        parentWidgetState.setState(() {});
+        editorWidgetState.setState(() {});
         return KeyEventResult.handled;
       }
       if (keysPressed.contains(LogicalKeyboardKey.keyE)) {
         gameMode = GameMode.addEdge;
         // ignore: invalid_use_of_protected_member
-        parentWidgetState.setState(() {});
+        editorWidgetState.setState(() {});
         return KeyEventResult.handled;
       }
       if (keysPressed.contains(LogicalKeyboardKey.keyV)) {
         gameMode = GameMode.addVertex;
         // ignore: invalid_use_of_protected_member
-        parentWidgetState.setState(() {});
+        editorWidgetState.setState(() {});
         return KeyEventResult.handled;
       }
       if (keysPressed.contains(LogicalKeyboardKey.keyX)) {
         gameMode = GameMode.deleteComponent;
         // ignore: invalid_use_of_protected_member
-        parentWidgetState.setState(() {});
+        editorWidgetState.setState(() {});
         return KeyEventResult.handled;
       }
     }

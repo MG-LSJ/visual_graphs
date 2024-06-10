@@ -48,6 +48,7 @@ class Graph {
 
   void removeEdge(Edge edge) {
     _edges.remove(edge);
+    removeEdgeFromCache(edge);
   }
 
   void insertEdgeInCache(Vertex from, Vertex to, Edge edge) {

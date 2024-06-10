@@ -19,4 +19,6 @@ class QueueDS<T> {
   void clear() {
     _queue.clear();
   }
+
+  List<T> get queue => List.from(_queue);
 }
