@@ -1,13 +1,23 @@
-import 'package:visual_graphs/components/edge_component.dart';
-import 'package:visual_graphs/components/vertex_component.dart';
+import 'package:visual_graphs/graph_editor/components/edge_component.dart';
+import 'package:visual_graphs/graph_editor/components/vertex_component.dart';
 import 'package:flame/components.dart';
 
 part "edge.dart";
 part "vertex.dart";
 
 class Graph {
-  final Set<Vertex> _vertices = {};
-  final Set<Edge> _edges = {};
+  late final Set<Vertex> _vertices;
+  late final Set<Edge> _edges;
+  late final Map<Vertex, Map<Vertex, Set<Edge>>> _edgesBetween;
+  Vertex? hoveredVertex;
+  Map<Edge, int> edgeIndexMap = {};
+  Map<Edge, double> edgePositionedIndexMap = {};
+
+  Graph() {
+    _vertices = {};
+    _edges = {};
+    _edgesBetween = {};
+  }
 
   List<Vertex> get vertices => _vertices.toList();
   List<Edge> get edges => _edges.toList();
@@ -18,7 +28,8 @@ class Graph {
 
   void addEdge(Edge edge) {
     insertEdgeInCache(edge.from, edge.to, edge);
-    // If edge is not directed,add it in reverse too
+
+    // If edge is not directed, add it in reverse too
     if (!edge.isDirected && !edge.isSelfEdge) {
       insertEdgeInCache(edge.to, edge.from, edge);
     }
@@ -61,12 +72,23 @@ class Graph {
     if (_edgesBetween.containsKey(edge.from)) {
       if (_edgesBetween[edge.from]!.containsKey(edge.to)) {
         _edgesBetween[edge.from]![edge.to]!.remove(edge);
+
+        // If there are no more edges between the two vertices, remove the key
+        if (_edgesBetween[edge.from]![edge.to]!.isEmpty) {
+          _edgesBetween[edge.from]!.remove(edge.to);
+        }
       }
     }
+
     if (!edge.isDirected && !edge.isSelfEdge) {
       if (_edgesBetween.containsKey(edge.to)) {
         if (_edgesBetween[edge.to]!.containsKey(edge.from)) {
           _edgesBetween[edge.to]![edge.from]!.remove(edge);
+
+          // If there are no more edges between the two vertices, remove the key
+          if (_edgesBetween[edge.to]![edge.from]!.isEmpty) {
+            _edgesBetween[edge.to]!.remove(edge.from);
+          }
         }
       }
     }
@@ -77,10 +99,10 @@ class Graph {
     _edges.clear();
   }
 
-  // Chache for the edges between two vertices
-  final Map<Vertex, Map<Vertex, Set<Edge>>> _edgesBetween = {};
+  Map<Vertex, Set<Edge>> getNeighbours(Vertex vertex) =>
+      _edgesBetween[vertex] ?? {};
 
-  List<Edge> edgesBetween(Vertex start, Vertex? end) {
+  List<Edge> getEdgesBetween(Vertex start, Vertex? end) {
     if (end == null) return [];
 
     Set<Edge> edges = {};
@@ -98,7 +120,7 @@ class Graph {
     return list;
   }
 
-  Vector2 get center {
+  Vector2 get geometricCenter {
     if (_vertices.isEmpty) {
       return Vector2.zero();
     }
@@ -113,10 +135,6 @@ class Graph {
     return Vector2(x / _vertices.length, y / _vertices.length);
   }
 
-  Vertex? hoveredVertex;
-
-  Map<Edge, int> edgeIndexMap = {};
-
   void computeEdgeIndex() {
     edgeIndexMap.clear();
     for (var edge in _edges) {
@@ -124,10 +142,30 @@ class Graph {
     }
   }
 
-  Map<Edge, double> edgePositionedIndexMap = {};
   void computeEdgePositionedIndex() {
     for (var edge in _edges) {
       edgePositionedIndexMap[edge] = edge.computePositionedIndex();
     }
+  }
+
+  bool get isEmpty => _vertices.isEmpty;
+  bool get isNotEmpty => _vertices.isNotEmpty;
+
+  Graph._from(
+    this._vertices,
+    this._edges,
+    this._edgesBetween,
+    this.edgeIndexMap,
+    this.edgePositionedIndexMap,
+  );
+
+  Graph clone() {
+    return Graph._from(
+      Set.from(_vertices),
+      Set.from(_edges),
+      Map.from(_edgesBetween),
+      Map.from(edgeIndexMap),
+      Map.from(edgePositionedIndexMap),
+    );
   }
 }

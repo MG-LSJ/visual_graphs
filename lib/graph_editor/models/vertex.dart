@@ -20,4 +20,12 @@ class Vertex extends _Vertex {
   Vertex({super.label = '', Vector2? position}) {
     component = VertexComponent(position ?? Vector2.zero(), vertex: this);
   }
+
+  Map<Vertex, Set<Edge>> get neighbours {
+    return component.gameRef.graph.getNeighbours(this);
+  }
+
+  List<Vertex> get neighboursList {
+    return neighbours.keys.toList();
+  }
 }

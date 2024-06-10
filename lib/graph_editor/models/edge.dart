@@ -47,7 +47,7 @@ class Edge extends _Edge {
   }
 
   double computePositionedIndex() {
-    var edgeList = component.gameRef.graph.edgesBetween(from, to);
+    var edgeList = component.gameRef.graph.getEdgesBetween(from, to);
     edgeList.sort((a, b) => a.id.compareTo(b.id));
     var index = edgeList.indexOf(this);
 
@@ -71,7 +71,7 @@ class Edge extends _Edge {
   }
 
   int computeIndex() {
-    var edgeList = component.gameRef.graph.edgesBetween(from, to);
+    var edgeList = component.gameRef.graph.getEdgesBetween(from, to);
     edgeList.sort((a, b) => a.id.compareTo(b.id));
     var index = edgeList.indexOf(this);
     return index;

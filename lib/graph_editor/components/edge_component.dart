@@ -1,28 +1,28 @@
 import 'dart:math' as math;
 import 'dart:ui' as ui;
-import 'package:visual_graphs/components/graph_game.dart';
-import 'package:visual_graphs/models/graph.dart';
+import 'package:visual_graphs/graph_editor/components/graph_game.dart';
+import 'package:visual_graphs/graph_editor/models/graph.dart';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
-import 'package:visual_graphs/widgets/edge_info_box.dart';
+import 'package:visual_graphs/graph_editor/widgets/edge_info_box.dart';
 
 class EdgeComponent extends ShapeComponent with HasGameRef<GraphGame> {
   Edge edge;
   Color color = Colors.white;
   Color hoverColor = Colors.white;
-  Color _color = const Color(0x00000000);
+
   Path path = Path();
   double labelTextSize = 14;
   List<Offset> pathPoints = [];
 
+  Color _paintColor = const Color(0x00000000);
+  final PaintingStyle _paintPaintingStyle = PaintingStyle.stroke;
+  double _paintStrokeWidth = 2;
+
   EdgeComponent(this.edge) {
-    _color = color;
+    _paintColor = color;
     anchor = Anchor.topLeft;
     position = edge.from.component.position;
-    paint = Paint()
-      ..color = _color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2;
   }
 
   @override
@@ -61,25 +61,27 @@ class EdgeComponent extends ShapeComponent with HasGameRef<GraphGame> {
   }
 
   void hoverIn() {
-    _color =
+    _paintColor =
         gameRef.gameMode == GameMode.deleteComponent ? Colors.red : hoverColor;
-    paint
-      ..color = _color
-      ..strokeWidth = 3;
+    _paintStrokeWidth = 3;
+
     labelTextSize = 16;
   }
 
   void hoverOut() {
-    _color = color;
-    paint
-      ..color = _color
-      ..strokeWidth = 2;
+    _paintColor = color;
+    _paintStrokeWidth = 2;
+
     labelTextSize = 14;
   }
 
   // rendering
   @override
   void render(Canvas canvas) {
+    paint = Paint()
+      ..color = _paintColor
+      ..style = _paintPaintingStyle
+      ..strokeWidth = _paintStrokeWidth;
     if (edge.isSelfEdge) {
       renderSelfEdge(canvas);
     } else {
@@ -170,7 +172,7 @@ class EdgeComponent extends ShapeComponent with HasGameRef<GraphGame> {
         (index + 1) * edge.from.component.radius * math.pow(0.975, index);
     path = Path();
 
-    var center = gameRef.graph.center;
+    var center = gameRef.graph.geometricCenter;
     var centerOffset = Offset(
       center.x - edge.from.component.position.x,
       center.y - edge.from.component.position.y,
@@ -232,7 +234,7 @@ class EdgeComponent extends ShapeComponent with HasGameRef<GraphGame> {
     var paragraphFontSize = labelTextSize;
     var fontSize = paragraphFontSize + 2;
     var fontWeight = FontWeight.normal;
-    var fontColor = _color;
+    var fontColor = _paintColor;
     var text = edge.weight.toString();
 
     final paragraphBuilder = ui.ParagraphBuilder(

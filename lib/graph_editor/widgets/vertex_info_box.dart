@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:visual_graphs/components/vertex_component.dart';
+import 'package:visual_graphs/graph_editor/components/vertex_component.dart';
 
 class VertexInfoBox extends StatefulWidget {
   final VertexComponent vertexComponent;

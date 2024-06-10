@@ -1,4 +1,4 @@
-import 'package:visual_graphs/game_screen.dart';
+import 'package:visual_graphs/graph_editor/graph_editor.dart';
 import 'package:flutter/material.dart';
 
 class App extends StatelessWidget {
@@ -7,7 +7,7 @@ class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: const GameScreen(),
+      home: GraphEditorWidget(),
       title: "Visual Graphs",
       theme: ThemeData(
         useMaterial3: true,

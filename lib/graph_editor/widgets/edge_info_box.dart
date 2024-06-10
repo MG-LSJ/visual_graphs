@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:visual_graphs/components/edge_component.dart';
+import 'package:visual_graphs/graph_editor/components/edge_component.dart';
 
 class EdgeInfoBox extends StatefulWidget {
   final EdgeComponent edgeComponent;

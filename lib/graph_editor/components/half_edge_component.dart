@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 import 'dart:ui';
-import 'package:visual_graphs/components/graph_game.dart';
-import 'package:visual_graphs/components/vertex_component.dart';
+import 'package:visual_graphs/graph_editor/components/graph_game.dart';
+import 'package:visual_graphs/graph_editor/components/vertex_component.dart';
 import 'package:flame/components.dart';
 
 class HalfEdgeComponent extends ShapeComponent with HasGameRef<GraphGame> {

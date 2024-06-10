@@ -1,14 +1,14 @@
 import 'dart:async';
 import 'dart:ui' as ui;
 
-import 'package:visual_graphs/components/graph_game.dart';
-import 'package:visual_graphs/models/graph.dart';
+import 'package:visual_graphs/graph_editor/components/graph_game.dart';
+import 'package:visual_graphs/graph_editor/models/graph.dart';
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flame/effects.dart';
 import 'package:flame/events.dart';
 import 'package:flutter/material.dart';
-import 'package:visual_graphs/widgets/vertex_info_box.dart';
+import 'package:visual_graphs/graph_editor/widgets/vertex_info_box.dart';
 
 class VertexComponent extends ShapeComponent
     with
@@ -19,23 +19,25 @@ class VertexComponent extends ShapeComponent
         CollisionCallbacks
     implements
         SizeProvider {
+  Vertex vertex;
+
   double radius = 20;
-  double circleRadius = 20;
+  double _circleRadius = 20;
+
   Color color = Colors.blue;
   Color hoverColor = Colors.lightBlue;
-  Vertex vertex;
+
+  Color _paintColor = const Color(0x00000000);
+  final PaintingStyle _paintPaintingStyle = PaintingStyle.fill;
 
   VertexComponent(position, {required this.vertex})
       : super(
           position: position,
           anchor: Anchor.center,
         ) {
+    _paintColor = color;
     width = radius * 2;
     height = radius * 2;
-    paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.fill;
-    // debugMode = true;
   }
 
   @override
@@ -87,24 +89,18 @@ class VertexComponent extends ShapeComponent
     gameRef.graph.hoveredVertex = vertex;
     switch (gameRef.gameMode) {
       case GameMode.defaultMode:
-        paint = Paint()
-          ..color = hoverColor
-          ..style = PaintingStyle.fill;
-        circleRadius = radius + 2;
+        _paintColor = hoverColor;
+        _circleRadius = radius + 2;
         gameRef.mouseCursor = SystemMouseCursors.click;
         break;
       case GameMode.deleteComponent:
-        paint = Paint()
-          ..color = Colors.redAccent
-          ..style = PaintingStyle.fill;
-        circleRadius = radius + 2;
+        _paintColor = Colors.redAccent;
+        _circleRadius = radius + 2;
         gameRef.mouseCursor = SystemMouseCursors.click;
         break;
       case GameMode.addEdge:
-        paint = Paint()
-          ..color = hoverColor
-          ..style = PaintingStyle.fill;
-        circleRadius = radius + 2;
+        _paintColor = hoverColor;
+        _circleRadius = radius + 2;
         break;
       default:
     }
@@ -121,20 +117,25 @@ class VertexComponent extends ShapeComponent
         break;
       default:
     }
-    circleRadius = radius;
-    paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.fill;
+    _circleRadius = radius;
+    _paintColor = color;
     super.onHoverExit();
   }
 
   // Rendering
 
+  void refreshPaint() {
+    paint = Paint()
+      ..color = _paintColor
+      ..style = _paintPaintingStyle;
+  }
+
   @override
   void render(Canvas canvas) {
+    refreshPaint();
     canvas.drawCircle(
       Offset(radius, radius),
-      circleRadius,
+      _circleRadius,
       paint,
     );
     renderText(canvas);

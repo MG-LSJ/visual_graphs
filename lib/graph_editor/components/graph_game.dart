@@ -1,13 +1,15 @@
-import 'package:visual_graphs/components/half_edge_component.dart';
-import 'package:visual_graphs/models/graph.dart';
+import 'package:visual_graphs/graph_editor/components/half_edge_component.dart';
+import 'package:visual_graphs/graph_editor/models/graph.dart';
 import 'package:flame/components.dart';
 import 'package:flame/events.dart';
 import 'package:flame/extensions.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:visual_graphs/helpers/stack.dart';
 
 enum GameMode {
+  lockedMode,
   defaultMode,
   addVertex,
   addEdge,
@@ -18,35 +20,48 @@ class GraphGame extends FlameGame
     with PanDetector, TapCallbacks, MouseMovementDetector, KeyboardEvents {
   late Graph graph;
 
-  GameMode _gameMode = GameMode.defaultMode;
+  GameMode _gameMode = GameMode.lockedMode;
   GameMode get gameMode => _gameMode;
+
+  bool addEdgeModeIsWeighted = false;
+  bool addEdgeModeIsDirected = false;
+
   late BuildContext context;
   late State parentWidgetState;
+
+  SizedStackDS<Graph> undoStack = SizedStackDS(10);
 
   GraphGame() {
     graph = Graph();
     graph.addVertex(Vertex(label: "0", position: Vector2(-100, -100)));
     graph.addVertex(Vertex(label: "1", position: Vector2(100, 100)));
+    graph.addVertex(Vertex(label: "2", position: Vector2(100, -100)));
+    graph.addVertex(Vertex(label: "3", position: Vector2(-100, 100)));
+
     graph.addEdge(Edge(
       from: graph.vertices[0],
       to: graph.vertices[1],
-      weight: 10,
-    ));
-    graph.addEdge(Edge(
-      from: graph.vertices[0],
-      to: graph.vertices[0],
       weight: 5,
     ));
     graph.addEdge(Edge(
-      from: graph.vertices[0],
+        from: graph.vertices[1],
+        to: graph.vertices[2],
+        weight: 3,
+        isDirected: true));
+    graph.addEdge(Edge(
+      from: graph.vertices[2],
+      to: graph.vertices[3],
+      weight: 1,
+    ));
+    graph.addEdge(Edge(
+      from: graph.vertices[3],
       to: graph.vertices[0],
-      weight: 10,
       isDirected: true,
     ));
     graph.addEdge(Edge(
       from: graph.vertices[0],
-      to: graph.vertices[1],
-      weight: 5,
+      to: graph.vertices[0],
+      weight: 2,
       isDirected: true,
     ));
   }
@@ -99,6 +114,11 @@ class GraphGame extends FlameGame
 
   @override
   void onPanUpdate(DragUpdateInfo info) {
+    if (gameMode == GameMode.lockedMode) {
+      camera.viewfinder.position -= info.delta.global;
+      return;
+    }
+
     if (gameMode == GameMode.defaultMode ||
         gameMode == GameMode.deleteComponent) {
       if (graph.hoveredVertex != null) {
@@ -119,6 +139,7 @@ class GraphGame extends FlameGame
       case GameMode.deleteComponent:
         for (var edge in graph.edges) {
           if (edge.component.checkHover(cursorPosition)) {
+            saveHistory();
             graph.removeEdge(edge);
             refreshGraphComponents();
             break;
@@ -144,6 +165,8 @@ class GraphGame extends FlameGame
   }
 
   void addVertex(TapDownEvent event) {
+    saveHistory();
+
     // Convert the global tap position to the local position of the camera viewfinder
     var position = camera.viewfinder.globalToLocal(event.localPosition);
     graph.addVertex(Vertex(
@@ -154,6 +177,8 @@ class GraphGame extends FlameGame
   }
 
   void deleteVertex(Vertex v) {
+    saveHistory();
+
     graph.removeVertex(v);
     refreshGraphComponents();
   }
@@ -164,9 +189,19 @@ class GraphGame extends FlameGame
       selectedVertex = v;
       world.add(HalfEdgeComponent(v.component));
     } else {
-      graph.addEdge(Edge(from: selectedVertex!, to: v));
+      saveHistory();
+
+      var edge = Edge(
+        from: selectedVertex!,
+        to: v,
+        isDirected: addEdgeModeIsDirected,
+      );
+      graph.addEdge(edge);
       selectedVertex = null;
       refreshGraphComponents();
+      if (addEdgeModeIsWeighted) {
+        edge.component.showInfo(context);
+      }
     }
   }
 
@@ -180,6 +215,10 @@ class GraphGame extends FlameGame
       case GameMode.addEdge:
         mouseCursor = SystemMouseCursors.precise;
         break;
+      case GameMode.lockedMode:
+        mouseCursor = SystemMouseCursors.grab;
+        undoStack.clear();
+        break;
       default:
         mouseCursor = SystemMouseCursors.basic;
     }
@@ -187,55 +226,82 @@ class GraphGame extends FlameGame
   }
 
   void clearGraph() {
+    saveHistory();
     graph.clear();
     refreshGraphComponents();
   }
 
-  void centerCamera() => camera.viewfinder.position = graph.center;
+  void saveHistory() {
+    // ignore: invalid_use_of_protected_member
+    parentWidgetState.setState(() {});
+    undoStack.push(graph.clone());
+  }
+
+  void undo() {
+    if (undoStack.isNotEmpty) {
+      graph = undoStack.pop();
+      refreshGraphComponents();
+    }
+  }
+
+  void centerCamera() {
+    camera.viewfinder.position = graph.geometricCenter;
+  }
 
   @override
   KeyEventResult onKeyEvent(
       KeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
-    if (keysPressed.contains(LogicalKeyboardKey.escape)) {
-      switch (gameMode) {
-        case GameMode.addVertex:
-        case GameMode.deleteComponent:
-          gameMode = GameMode.defaultMode;
-          break;
-        case GameMode.addEdge:
-          if (selectedVertex != null) {
-            selectedVertex = null;
-            refreshGraphComponents();
-          } else {
-            gameMode = GameMode.defaultMode;
-          }
-          break;
-        default:
+    if (gameMode != GameMode.lockedMode) {
+      if (keysPressed.contains(LogicalKeyboardKey.controlLeft) ||
+          keysPressed.contains(LogicalKeyboardKey.controlRight)) {
+        if (keysPressed.contains(LogicalKeyboardKey.keyZ)) {
+          undo();
+          return KeyEventResult.handled;
+        }
       }
-      // ignore: invalid_use_of_protected_member
-      parentWidgetState.setState(() {});
-      return KeyEventResult.handled;
+
+      if (keysPressed.contains(LogicalKeyboardKey.escape)) {
+        switch (gameMode) {
+          case GameMode.addVertex:
+          case GameMode.deleteComponent:
+            gameMode = GameMode.defaultMode;
+            break;
+          case GameMode.addEdge:
+            if (selectedVertex != null) {
+              selectedVertex = null;
+              refreshGraphComponents();
+            } else {
+              gameMode = GameMode.defaultMode;
+            }
+            break;
+          default:
+        }
+        // ignore: invalid_use_of_protected_member
+        parentWidgetState.setState(() {});
+        return KeyEventResult.handled;
+      }
+      if (keysPressed.contains(LogicalKeyboardKey.keyE)) {
+        gameMode = GameMode.addEdge;
+        // ignore: invalid_use_of_protected_member
+        parentWidgetState.setState(() {});
+        return KeyEventResult.handled;
+      }
+      if (keysPressed.contains(LogicalKeyboardKey.keyV)) {
+        gameMode = GameMode.addVertex;
+        // ignore: invalid_use_of_protected_member
+        parentWidgetState.setState(() {});
+        return KeyEventResult.handled;
+      }
+      if (keysPressed.contains(LogicalKeyboardKey.keyX)) {
+        gameMode = GameMode.deleteComponent;
+        // ignore: invalid_use_of_protected_member
+        parentWidgetState.setState(() {});
+        return KeyEventResult.handled;
+      }
     }
+
     if (keysPressed.contains(LogicalKeyboardKey.keyC)) {
       centerCamera();
-      return KeyEventResult.handled;
-    }
-    if (keysPressed.contains(LogicalKeyboardKey.keyE)) {
-      gameMode = GameMode.addEdge;
-      // ignore: invalid_use_of_protected_member
-      parentWidgetState.setState(() {});
-      return KeyEventResult.handled;
-    }
-    if (keysPressed.contains(LogicalKeyboardKey.keyV)) {
-      gameMode = GameMode.addVertex;
-      // ignore: invalid_use_of_protected_member
-      parentWidgetState.setState(() {});
-      return KeyEventResult.handled;
-    }
-    if (keysPressed.contains(LogicalKeyboardKey.keyX)) {
-      gameMode = GameMode.deleteComponent;
-      // ignore: invalid_use_of_protected_member
-      parentWidgetState.setState(() {});
       return KeyEventResult.handled;
     }
 
