@@ -25,4 +25,5 @@ enum GameMode {
   addVertex,
   addEdge,
   deleteComponent,
+  pickVertex,
 }

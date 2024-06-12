@@ -1,12 +1,12 @@
 import 'package:visual_graphs/algorithms/traversal.dart';
 import 'package:visual_graphs/graph_editor/models/graph.dart';
 import 'package:visual_graphs/helpers/data_structures/pair.dart';
-import 'package:visual_graphs/helpers/notifiers/queue_notifier.dart';
+import 'package:visual_graphs/helpers/notifiers/stack_notifier.dart';
 
-class BreadthFirstTraversal extends Traversal {
-  final QueueNotifier<Pair<Vertex, Edge?>> queue = QueueNotifier();
+class DepthFirstTraversal extends Traversal {
+  final StackNotifier<Pair<Vertex, Edge?>> stack = StackNotifier();
 
-  BreadthFirstTraversal({required super.graph});
+  DepthFirstTraversal({required super.graph});
 
   @override
   void start(Vertex startVertex) async {
@@ -15,8 +15,8 @@ class BreadthFirstTraversal extends Traversal {
     await see(Pair(startVertex, null));
     await Future.delayed(delay);
 
-    while (queue.isNotEmpty) {
-      final pair = queue.dequeue();
+    while (stack.isNotEmpty) {
+      final pair = stack.pop();
       await visit(pair);
 
       var neighbours = pair.first.neighbours;
@@ -34,16 +34,16 @@ class BreadthFirstTraversal extends Traversal {
   @override
   Future see(Pair<Vertex, Edge?> pair) async {
     await super.see(pair);
-    queue.enqueue(pair);
+    stack.push(pair);
   }
 
   @override
   void clear() {
     super.clear();
-    queue.clear();
+    stack.clear();
   }
 
-  List<Vertex> get queueVertices {
-    return queue.queue.map((pair) => pair.first).toList();
+  List<Vertex> get stackVerticies {
+    return stack.stack.map((pair) => pair.first).toList();
   }
 }

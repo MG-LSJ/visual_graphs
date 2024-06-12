@@ -1,31 +1,31 @@
 import 'package:flutter/material.dart';
-import 'package:visual_graphs/algorithms/bft.dart';
-import 'package:visual_graphs/graph_editor/globals.dart';
+import 'package:visual_graphs/algorithms/dft.dart';
 import 'package:visual_graphs/graph_editor/models/graph.dart';
+import 'package:visual_graphs/graph_editor/globals.dart';
 import 'package:visual_graphs/helpers/functions/pick_starting_vertex.dart';
 import 'package:visual_graphs/widgets/components/animate_vertex.dart';
 import 'package:visual_graphs/widgets/components/circle_vertex.dart';
 import 'package:visual_graphs/widgets/components/empty_text.dart';
 import 'package:visual_graphs/widgets/components/starting_vertex.dart';
 import 'package:visual_graphs/widgets/components/vertex_list_grid.dart';
-import 'package:visual_graphs/widgets/components/vertex_queue.dart';
+import 'package:visual_graphs/widgets/components/vertex_stack.dart';
 import 'package:visual_graphs/widgets/components/white_border.dart';
 
-class BFTWidget extends StatefulWidget {
-  const BFTWidget({super.key});
+class DFTWidget extends StatefulWidget {
+  const DFTWidget({super.key});
 
   @override
-  State<BFTWidget> createState() => _BFTWidgetState();
+  State<DFTWidget> createState() => _DFTWidgetState();
 }
 
-class _BFTWidgetState extends State<BFTWidget> {
-  late BreadthFirstTraversal bft;
+class _DFTWidgetState extends State<DFTWidget> {
+  late DepthFirstTraversal dft;
   final Map<int, Widget> vertexWidgets = {};
 
   @override
   void initState() {
     super.initState();
-    bft = BreadthFirstTraversal(graph: Globals.game.graph);
+    dft = DepthFirstTraversal(graph: Globals.game.graph);
   }
 
   @override
@@ -36,7 +36,7 @@ class _BFTWidgetState extends State<BFTWidget> {
     }
 
     return Column(
-      mainAxisSize: MainAxisSize.max,
+      mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -53,15 +53,15 @@ class _BFTWidgetState extends State<BFTWidget> {
         StartingVertex(vertexWidgets: vertexWidgets),
         const SizedBox(height: 20),
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           mainAxisSize: MainAxisSize.max,
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             SizedBox(
               width: 100,
               child: Column(
-                mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.start,
+                mainAxisSize: MainAxisSize.max,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   const Center(
@@ -78,17 +78,36 @@ class _BFTWidgetState extends State<BFTWidget> {
                     child: SizedBox(
                       height: 60,
                       child: ValueListenableBuilder(
-                        valueListenable: bft.visitingVertexNotifier,
-                        builder: (context, Vertex? visitingVertex, child) {
-                          return (visitingVertex != null)
-                              ? AnimatedMove(
-                                  initialOffset: const Offset(100, 0),
-                                  duration: const Duration(milliseconds: 120),
-                                  child: vertexWidgets[visitingVertex.id]!,
-                                )
-                              : const EmptyText();
-                        },
-                      ),
+                          valueListenable: dft.visitingVertexNotifier,
+                          builder: (context, Vertex? visitingVertex, child) {
+                            return (visitingVertex != null)
+                                ? AnimatedMove(
+                                    initialOffset: const Offset(0, 100),
+                                    duration: const Duration(milliseconds: 120),
+                                    child: vertexWidgets[visitingVertex.id]!,
+                                  )
+                                : const EmptyText();
+                          }),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  const Text(
+                    "Stack: ",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  WhiteBorder(
+                    child: ListenableBuilder(
+                      listenable: dft.stack,
+                      builder: (context, child) {
+                        return VertexStack(
+                          dft.stackVerticies.reversed.toList(),
+                          vertexWidgets,
+                        );
+                      },
                     ),
                   ),
                 ],
@@ -97,9 +116,12 @@ class _BFTWidgetState extends State<BFTWidget> {
             SizedBox(
               width: 250,
               child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   const Text(
-                    "Queue: ",
+                    "Seen: ",
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 16,
@@ -107,62 +129,46 @@ class _BFTWidgetState extends State<BFTWidget> {
                   ),
                   const SizedBox(height: 10),
                   WhiteBorder(
-                    // child: VertexQueue(bft.queue, vertexWidgets, 4),
                     child: ListenableBuilder(
-                      listenable: bft.queue,
+                      listenable: dft.seen,
                       builder: (context, child) {
-                        return VertexQueue(bft.queueVertices, vertexWidgets, 4);
+                        return VertexListGrid(
+                            dft.seenVertices, vertexWidgets, 4, 3);
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  const Text(
+                    "Visited: ",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  WhiteBorder(
+                    child: ListenableBuilder(
+                      listenable: dft.visited,
+                      builder: (context, child) {
+                        return VertexListGrid(
+                            dft.visitedVertices, vertexWidgets, 4, 3);
                       },
                     ),
                   ),
                 ],
               ),
-            )
+            ),
           ],
-        ),
-        const SizedBox(height: 20),
-        const Text(
-          "Seen: ",
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 16,
-          ),
-        ),
-        const SizedBox(height: 10),
-        WhiteBorder(
-          child: ListenableBuilder(
-            listenable: bft.seen,
-            builder: (context, child) {
-              return VertexListGrid(bft.seenVertices, vertexWidgets, 6, 2);
-            },
-          ),
-        ),
-        const SizedBox(height: 20),
-        const Text(
-          "Visited: ",
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 16,
-          ),
-        ),
-        const SizedBox(height: 10),
-        WhiteBorder(
-          child: ListenableBuilder(
-            listenable: bft.visited,
-            builder: (context, child) {
-              return VertexListGrid(bft.visitedVertices, vertexWidgets, 6, 2);
-            },
-          ),
         ),
         const Spacer(),
         const SizedBox(height: 10),
         FilledButton(
           onPressed: () {
-            if (bft.isRunning) {
+            if (dft.isRunning) {
               ScaffoldMessenger.of(context).clearSnackBars();
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                  content: Text("BFT is already running"),
+                  content: Text("DFT is already running"),
                 ),
               );
               return;
@@ -177,17 +183,16 @@ class _BFTWidgetState extends State<BFTWidget> {
               Globals.game.gameMode = GameMode.lockedMode;
             });
             Globals.game.resetGraphColors();
-            bft.start(Globals.game.graph.pickedVertexNotifier.value!);
+            dft.start(Globals.game.graph.pickedVertexNotifier.value!);
           },
-          child: const Text("Start BFT"),
+          child: const Text("Start DFT"),
         ),
         const SizedBox(height: 10),
         ElevatedButton(
           onPressed: () {
             Globals.game.resetGraphColors();
             Globals.game.graph.pickedVertexNotifier.value = null;
-            bft.clear();
-            setState(() {});
+            dft.clear();
           },
           child: const Text("Reset"),
         ),

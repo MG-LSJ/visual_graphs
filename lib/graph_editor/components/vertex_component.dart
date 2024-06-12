@@ -63,6 +63,10 @@ class VertexComponent extends ShapeComponent
       case GameMode.deleteComponent:
         gameRef.deleteVertex(vertex);
         break;
+      case GameMode.pickVertex:
+        gameRef.graph.pickedVertexNotifier.value = vertex;
+        gameRef.restorePreviousGameMode();
+        break;
       default:
     }
     event.handled = true;
@@ -113,6 +117,7 @@ class VertexComponent extends ShapeComponent
         drawBorder = true;
         break;
       case GameMode.addEdge:
+      case GameMode.pickVertex:
         _paintColor = hoverColor;
         _circleRadius = radius + 2;
         break;

@@ -1,22 +1,27 @@
+import 'package:flutter/material.dart';
 import 'package:visual_graphs/graph_editor/components/edge_component.dart';
 import 'package:visual_graphs/graph_editor/components/vertex_component.dart';
 import 'package:flame/components.dart';
+import 'package:visual_graphs/helpers/notifiers/set_notifier.dart';
 
 part "edge.dart";
 part "vertex.dart";
 
 class Graph {
-  late final Set<Vertex> _vertices;
+  // late final NestedNotifier<SetNotifier<Vertex>> verticesNotifier;
+  late final SetNotifier<Vertex> _vertices;
   late final Set<Edge> _edges;
   late final Map<Vertex, Map<Vertex, Set<Edge>>> _edgesBetween;
   Vertex? hoveredVertex;
+  final ValueNotifier<Vertex?> pickedVertexNotifier = ValueNotifier(null);
   Map<Edge, int> edgeIndexMap = {};
   Map<Edge, double> edgePositionedIndexMap = {};
 
   Graph() {
-    _vertices = {};
+    _vertices = SetNotifier();
     _edges = {};
     _edgesBetween = {};
+    // verticesNotifier = NestedNotifier(_vertices);
   }
 
   List<Vertex> get vertices => _vertices.toList();
@@ -43,6 +48,12 @@ class Graph {
         .toList();
     for (var edge in edgesToRemove) {
       removeEdge(edge);
+    }
+    if (hoveredVertex == vertex) {
+      hoveredVertex = null;
+    }
+    if (pickedVertexNotifier.value == vertex) {
+      pickedVertexNotifier.value = null;
     }
   }
 
@@ -98,6 +109,9 @@ class Graph {
   void clear() {
     _vertices.clear();
     _edges.clear();
+    _edgesBetween.clear();
+    hoveredVertex = null;
+    pickedVertexNotifier.value = null;
   }
 
   Map<Vertex, Set<Edge>> getNeighbours(Vertex vertex) =>
@@ -128,7 +142,7 @@ class Graph {
 
     var x = 0.0;
     var y = 0.0;
-    for (var vertex in _vertices) {
+    for (var vertex in _vertices.set) {
       x += vertex.component.position.x;
       y += vertex.component.position.y;
     }
@@ -158,15 +172,19 @@ class Graph {
     this._edgesBetween,
     this.edgeIndexMap,
     this.edgePositionedIndexMap,
-  );
+  ) {
+    // verticesNotifier = NestedNotifier(_vertices);
+  }
 
   Graph clone() {
     return Graph._from(
-      Set.from(_vertices),
+      SetNotifier.from(_vertices),
       Set.from(_edges),
       Map.from(_edgesBetween),
       Map.from(edgeIndexMap),
       Map.from(edgePositionedIndexMap),
     );
   }
+
+  SetNotifier<Vertex> get verticesNotifier => _vertices;
 }

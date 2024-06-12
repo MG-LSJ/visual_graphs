@@ -19,6 +19,8 @@ class StackDS<T> {
   void clear() {
     _stack.clear();
   }
+
+  List<T> get stack => List.from(_stack);
 }
 
 class SizedStackDS<T> extends StackDS<T> {

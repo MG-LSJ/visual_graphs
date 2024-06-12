@@ -8,13 +8,14 @@ import 'package:flame/extensions.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:visual_graphs/helpers/stack.dart';
+import 'package:visual_graphs/helpers/data_structures/stack.dart';
 
 class GraphGame extends FlameGame
     with PanDetector, TapCallbacks, MouseMovementDetector, KeyboardEvents {
   late Graph graph;
 
   GameMode _gameMode = GameMode.lockedMode;
+  GameMode _previousGameMode = GameMode.lockedMode;
   GameMode get gameMode => _gameMode;
 
   bool addEdgeModeIsWeighted = false;
@@ -217,6 +218,7 @@ class GraphGame extends FlameGame
   }
 
   set gameMode(GameMode gm) {
+    _previousGameMode = _gameMode;
     _gameMode = gm;
     selectedVertex = null;
     switch (gm) {
@@ -230,10 +232,21 @@ class GraphGame extends FlameGame
         mouseCursor = SystemMouseCursors.grab;
         undoStack.clear();
         break;
-      default:
+      case GameMode.deleteComponent:
+        mouseCursor = SystemMouseCursors.click;
+        break;
+      case GameMode.pickVertex:
+        mouseCursor = SystemMouseCursors.precise;
+        break;
+      case GameMode.defaultMode:
         mouseCursor = SystemMouseCursors.basic;
     }
+    editorWidgetState.setState(() {});
     refreshGraphComponents();
+  }
+
+  void restorePreviousGameMode() {
+    gameMode = _previousGameMode;
   }
 
   void clearGraph() {
@@ -293,28 +306,23 @@ class GraphGame extends FlameGame
               gameMode = GameMode.defaultMode;
             }
             break;
+          case GameMode.pickVertex:
+            restorePreviousGameMode();
+            break;
           default:
         }
-        // ignore: invalid_use_of_protected_member
-        editorWidgetState.setState(() {});
         return KeyEventResult.handled;
       }
       if (keysPressed.contains(LogicalKeyboardKey.keyE)) {
         gameMode = GameMode.addEdge;
-        // ignore: invalid_use_of_protected_member
-        editorWidgetState.setState(() {});
         return KeyEventResult.handled;
       }
       if (keysPressed.contains(LogicalKeyboardKey.keyV)) {
         gameMode = GameMode.addVertex;
-        // ignore: invalid_use_of_protected_member
-        editorWidgetState.setState(() {});
         return KeyEventResult.handled;
       }
       if (keysPressed.contains(LogicalKeyboardKey.keyX)) {
         gameMode = GameMode.deleteComponent;
-        // ignore: invalid_use_of_protected_member
-        editorWidgetState.setState(() {});
         return KeyEventResult.handled;
       }
     }

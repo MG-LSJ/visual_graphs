@@ -1,0 +1,51 @@
+import 'package:flutter/material.dart';
+import 'package:visual_graphs/graph_editor/models/graph.dart';
+import 'package:visual_graphs/widgets/components/animate_vertex.dart';
+import 'package:visual_graphs/widgets/components/empty_text.dart';
+
+class VertexQueue extends StatefulWidget {
+  const VertexQueue(this.vertices, this.vertexWidgets, this.rowCount,
+      {super.key});
+  final int rowCount;
+  final List<Vertex> vertices;
+  final Map<int, Widget> vertexWidgets;
+
+  @override
+  State<VertexQueue> createState() => _VertexQueueState();
+}
+
+class _VertexQueueState extends State<VertexQueue> {
+  List<Vertex> previousVertices = [];
+
+  @override
+  Widget build(BuildContext context) {
+    int i = 0;
+    var wid = GridView(
+      shrinkWrap: true,
+      physics: const ScrollPhysics(),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: widget.rowCount,
+        childAspectRatio: 1,
+        mainAxisExtent: 60,
+      ),
+      children: widget.vertices.isNotEmpty
+          ? [
+              for (;
+                  i < widget.vertices.length &&
+                      i < previousVertices.length &&
+                      widget.vertices[i] == previousVertices[i];
+                  i++)
+                widget.vertexWidgets[widget.vertices[i].id]!,
+              for (; i < widget.vertices.length; i++)
+                AnimatedMove(
+                    initialOffset: const Offset(50, 0),
+                    duration: const Duration(milliseconds: 120),
+                    child: widget.vertexWidgets[widget.vertices[i].id]!),
+            ]
+          : [const EmptyText()],
+    );
+
+    previousVertices = List.from(widget.vertices);
+    return wid;
+  }
+}
