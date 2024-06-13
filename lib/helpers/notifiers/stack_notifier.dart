@@ -29,3 +29,28 @@ class StackNotifier<T> extends ChangeNotifier {
 
   List<T> get stack => _stack.stack;
 }
+
+class SizedStackWithSizeNotifier<T> extends SizedStackDS<T> {
+  ValueNotifier<int> stackSizeNotifier = ValueNotifier(0);
+
+  SizedStackWithSizeNotifier(super.maxSize);
+
+  @override
+  void push(T item) {
+    super.push(item);
+    stackSizeNotifier.value = stack.length;
+  }
+
+  @override
+  T pop() {
+    final item = super.pop();
+    stackSizeNotifier.value = stack.length;
+    return item;
+  }
+
+  @override
+  void clear() {
+    super.clear();
+    stackSizeNotifier.value = stack.length;
+  }
+}

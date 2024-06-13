@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:visual_graphs/algorithms/bft.dart';
+import 'package:visual_graphs/algorithms/traversal/bft.dart';
 import 'package:visual_graphs/graph_editor/globals.dart';
 import 'package:visual_graphs/graph_editor/models/graph.dart';
+import 'package:visual_graphs/helpers/functions/load_traversal_sample_graph.dart';
 import 'package:visual_graphs/helpers/functions/pick_starting_vertex.dart';
 import 'package:visual_graphs/widgets/components/animate_vertex.dart';
-import 'package:visual_graphs/widgets/components/circle_vertex.dart';
+import 'package:visual_graphs/widgets/components/vertex_widget.dart';
 import 'package:visual_graphs/widgets/components/empty_text.dart';
 import 'package:visual_graphs/widgets/components/starting_vertex.dart';
 import 'package:visual_graphs/widgets/components/vertex_list_grid.dart';
@@ -32,7 +33,7 @@ class _BFTWidgetState extends State<BFTWidget> {
   Widget build(BuildContext context) {
     vertexWidgets.clear();
     for (var vertex in Globals.game.graph.vertices) {
-      vertexWidgets[vertex.id] = CircleVertex(vertex);
+      vertexWidgets[vertex.id] = VertexWidget(vertex);
     }
 
     return Column(
@@ -40,13 +41,11 @@ class _BFTWidgetState extends State<BFTWidget> {
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        const Center(
-          child: Text(
-            "Starting Vertex:",
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-            ),
+        const Text(
+          "Starting Vertex:",
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 16,
           ),
         ),
         const SizedBox(height: 10),
@@ -156,40 +155,50 @@ class _BFTWidgetState extends State<BFTWidget> {
         ),
         const Spacer(),
         const SizedBox(height: 10),
-        FilledButton(
-          onPressed: () {
-            if (bft.isRunning) {
-              ScaffoldMessenger.of(context).clearSnackBars();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text("BFT is already running"),
-                ),
-              );
-              return;
-            }
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          mainAxisSize: MainAxisSize.max,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            FilledButton(
+              onPressed: () {
+                if (bft.isRunning) {
+                  ScaffoldMessenger.of(context).clearSnackBars();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("BFT is already running"),
+                    ),
+                  );
+                  return;
+                }
 
-            if (Globals.game.graph.pickedVertexNotifier.value == null) {
-              pickStartingVertex(context);
-              return;
-            }
+                if (Globals.game.graph.pickedVertexNotifier.value == null) {
+                  pickStartingVertex(context);
+                  return;
+                }
 
-            Globals.game.editorWidgetState.setState(() {
-              Globals.game.gameMode = GameMode.lockedMode;
-            });
-            Globals.game.resetGraphColors();
-            bft.start(Globals.game.graph.pickedVertexNotifier.value!);
-          },
-          child: const Text("Start BFT"),
+                Globals.game.gameMode = GameMode.lockedMode;
+
+                Globals.game.resetGraphColors();
+                bft.start(Globals.game.graph.pickedVertexNotifier.value!);
+              },
+              child: const Text("Start BFT"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Globals.game.resetGraphColors();
+                Globals.game.graph.pickedVertexNotifier.value = null;
+                bft.clear();
+                setState(() {});
+              },
+              child: const Text("Reset"),
+            ),
+          ],
         ),
         const SizedBox(height: 10),
-        ElevatedButton(
-          onPressed: () {
-            Globals.game.resetGraphColors();
-            Globals.game.graph.pickedVertexNotifier.value = null;
-            bft.clear();
-            setState(() {});
-          },
-          child: const Text("Reset"),
+        const TextButton(
+          onPressed: loadTraversalSampleGraph,
+          child: Text("Load Sample Graph"),
         ),
         const SizedBox(height: 10),
       ],

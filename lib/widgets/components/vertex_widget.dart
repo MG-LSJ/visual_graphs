@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:visual_graphs/graph_editor/globals.dart';
 import 'package:visual_graphs/graph_editor/models/graph.dart';
 
-class CircleVertex extends StatelessWidget {
-  const CircleVertex(this.vertex, {super.key});
+class VertexWidget extends StatelessWidget {
+  const VertexWidget(this.vertex, {super.key});
   final Vertex vertex;
 
   @override

@@ -20,6 +20,9 @@ class EdgeComponent extends ShapeComponent with HasGameRef<GraphGame> {
   final PaintingStyle _paintPaintingStyle = PaintingStyle.stroke;
   double _paintStrokeWidth = 2;
 
+  double edgeWidth = Globals.defaultEdgeWidth;
+  double edgeHoverWidth = Globals.defaultEdgeHoverWidth;
+
   EdgeComponent(this.edge) {
     _paintColor = color;
     anchor = Anchor.topLeft;
@@ -71,14 +74,14 @@ class EdgeComponent extends ShapeComponent with HasGameRef<GraphGame> {
     _paintColor = gameRef.gameMode == GameMode.deleteComponent
         ? Globals.defaultDeleteColor
         : hoverColor;
-    _paintStrokeWidth = 3;
+    _paintStrokeWidth = edgeHoverWidth;
 
     labelTextSize = 16;
   }
 
   void hoverOut() {
     _paintColor = color;
-    _paintStrokeWidth = 2;
+    _paintStrokeWidth = edgeWidth;
 
     labelTextSize = 14;
   }

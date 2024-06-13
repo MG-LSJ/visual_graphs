@@ -1,0 +1,99 @@
+import 'package:flutter/material.dart';
+import 'package:visual_graphs/algorithms/mst/kruskal.dart';
+import 'package:visual_graphs/graph_editor/globals.dart';
+import 'package:visual_graphs/helpers/functions/load_mst_sample_graph.dart';
+import 'package:visual_graphs/widgets/components/edge_grid.dart';
+import 'package:visual_graphs/widgets/components/edge_widget.dart';
+import 'package:visual_graphs/widgets/components/empty_text.dart';
+import 'package:visual_graphs/widgets/components/white_border.dart';
+
+class KruskalWidget extends StatefulWidget {
+  const KruskalWidget({super.key});
+
+  @override
+  State<KruskalWidget> createState() => _KruskalWidgetState();
+}
+
+class _KruskalWidgetState extends State<KruskalWidget> {
+  Kruskal kruskal = Kruskal();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.max,
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        const Text(
+          "Current Edge:",
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+          ),
+        ),
+        const SizedBox(height: 10),
+        WhiteBorder(
+          child: SizedBox(
+            width: 180,
+            height: 60,
+            child: ValueListenableBuilder(
+              valueListenable: kruskal.currentEdge,
+              builder: (context, value, child) {
+                if (value == null) return const EmptyText();
+                return EdgeWidget(edge: value);
+              },
+            ),
+          ),
+        ),
+        const SizedBox(height: 20),
+        const Text(
+          "Included Edges:",
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+          ),
+        ),
+        const SizedBox(height: 10),
+        WhiteBorder(
+          child: ListenableBuilder(
+            listenable: kruskal.includedEdges,
+            builder: (context, child) {
+              return EdgeGrid(kruskal.includedEdges.set, 2, 8);
+            },
+          ),
+        ),
+        const SizedBox(height: 20),
+        const Spacer(),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          mainAxisSize: MainAxisSize.max,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            FilledButton(
+              onPressed: () {
+                Globals.game.gameMode = GameMode.lockedMode;
+                kruskal.clear();
+                Globals.game.resetGraphColors();
+                kruskal.start();
+              },
+              child: const Text("Start Kruskal"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Globals.game.resetGraphColors();
+                kruskal.clear();
+              },
+              child: const Text("Reset"),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        const TextButton(
+          onPressed: loadMSTSampleGraph,
+          child: Text("Load Sample Graph"),
+        ),
+        const SizedBox(height: 10),
+      ],
+    );
+  }
+}

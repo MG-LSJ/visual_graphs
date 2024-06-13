@@ -15,6 +15,8 @@ abstract class Globals {
 
   static const Color defaultEdgeColor = Colors.white;
   static const Color defaultEdgeHoverColor = Colors.white;
+  static const double defaultEdgeWidth = 2;
+  static const double defaultEdgeHoverWidth = 3;
 
   static const Color defaultDeleteColor = Colors.red;
 }

@@ -1,6 +1,5 @@
 import 'package:visual_graphs/graph_editor/components/half_edge_component.dart';
 import 'package:visual_graphs/graph_editor/globals.dart';
-import 'package:visual_graphs/graph_editor/graph_editor.dart';
 import 'package:visual_graphs/graph_editor/models/graph.dart';
 import 'package:flame/components.dart';
 import 'package:flame/events.dart';
@@ -8,27 +7,28 @@ import 'package:flame/extensions.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:visual_graphs/helpers/data_structures/stack.dart';
+import 'package:visual_graphs/helpers/notifiers/stack_notifier.dart';
 
 class GraphGame extends FlameGame
     with PanDetector, TapCallbacks, MouseMovementDetector, KeyboardEvents {
   late Graph graph;
 
-  GameMode _gameMode = GameMode.lockedMode;
+  final ValueNotifier<GameMode> _gameMode =
+      ValueNotifier<GameMode>(GameMode.lockedMode);
+  ValueNotifier<GameMode> get gameModeNotifier => _gameMode;
+
   GameMode _previousGameMode = GameMode.lockedMode;
-  GameMode get gameMode => _gameMode;
+  GameMode get gameMode => _gameMode.value;
 
   bool addEdgeModeIsWeighted = false;
   bool addEdgeModeIsDirected = false;
 
   late BuildContext editorWidgetContext;
-  final State<GraphEditorWidget> editorWidgetState;
 
-  SizedStackDS<Graph> undoStack = SizedStackDS(10);
+  SizedStackWithSizeNotifier<Graph> undoStack = SizedStackWithSizeNotifier(10);
 
-  GraphGame({required this.editorWidgetState}) {
+  GraphGame() {
     graph = Graph();
-    // initiaize graph with some vertices and edges
     graph.addVertex(Vertex(label: "0", position: Vector2(-100, -100)));
     graph.addVertex(Vertex(label: "1", position: Vector2(100, 100)));
     graph.addVertex(Vertex(label: "2", position: Vector2(100, -100)));
@@ -218,8 +218,8 @@ class GraphGame extends FlameGame
   }
 
   set gameMode(GameMode gm) {
-    _previousGameMode = _gameMode;
-    _gameMode = gm;
+    _previousGameMode = _gameMode.value;
+    _gameMode.value = gm;
     selectedVertex = null;
     switch (gm) {
       case GameMode.addVertex:
@@ -241,7 +241,6 @@ class GraphGame extends FlameGame
       case GameMode.defaultMode:
         mouseCursor = SystemMouseCursors.basic;
     }
-    editorWidgetState.setState(() {});
     refreshGraphComponents();
   }
 
@@ -256,8 +255,6 @@ class GraphGame extends FlameGame
   }
 
   void saveHistory() {
-    // ignore: invalid_use_of_protected_member
-    editorWidgetState.setState(() {});
     undoStack.push(graph.clone());
   }
 
@@ -274,20 +271,22 @@ class GraphGame extends FlameGame
 
   @override
   KeyEventResult onKeyEvent(
-      KeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
+    KeyEvent event,
+    Set<LogicalKeyboardKey> keysPressed,
+  ) {
     if (gameMode != GameMode.lockedMode) {
       if (keysPressed.contains(LogicalKeyboardKey.controlLeft) ||
           keysPressed.contains(LogicalKeyboardKey.controlRight)) {
         if (keysPressed.contains(LogicalKeyboardKey.keyZ)) {
           undo();
           // ignore: invalid_use_of_protected_member
-          editorWidgetState.setState(() {});
+          // editorWidgetState.setState(() {});
           return KeyEventResult.handled;
         }
         if (keysPressed.contains(LogicalKeyboardKey.keyS)) {
           gameMode = GameMode.lockedMode;
           // ignore: invalid_use_of_protected_member
-          editorWidgetState.setState(() {});
+          // editorWidgetState.setState(() {});
           return KeyEventResult.handled;
         }
       }
