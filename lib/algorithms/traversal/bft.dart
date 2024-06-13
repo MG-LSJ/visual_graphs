@@ -1,4 +1,5 @@
 import 'package:visual_graphs/algorithms/traversal/traversal.dart';
+import 'package:visual_graphs/graph_editor/globals.dart';
 import 'package:visual_graphs/graph_editor/models/graph.dart';
 import 'package:visual_graphs/helpers/data_structures/pair.dart';
 import 'package:visual_graphs/helpers/notifiers/queue_notifier.dart';
@@ -6,13 +7,13 @@ import 'package:visual_graphs/helpers/notifiers/queue_notifier.dart';
 class BreadthFirstTraversal extends Traversal {
   final QueueNotifier<Pair<Vertex, Edge?>> queue = QueueNotifier();
 
-  BreadthFirstTraversal({required super.graph});
-
   @override
-  void start(Vertex startVertex) async {
+  void start([Vertex? startVertex]) async {
     clear();
+    Globals.game.greyOutGraphComponents();
     isRunning = true;
-    await see(Pair(startVertex, null));
+
+    await see(Pair(startVertex!, null));
     await Future.delayed(delay);
 
     while (queue.isNotEmpty) {
@@ -28,7 +29,7 @@ class BreadthFirstTraversal extends Traversal {
       }
       await Future.delayed(delay);
     }
-    await end();
+    await finalize();
   }
 
   @override

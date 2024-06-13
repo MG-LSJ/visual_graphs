@@ -1,21 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:visual_graphs/algorithms/mst/kruskals_algorithm.dart';
+import 'package:visual_graphs/algorithms/mst/lazy_prims_algorithm.dart';
 import 'package:visual_graphs/graph_editor/globals.dart';
 import 'package:visual_graphs/helpers/functions/load_mst_sample_graph.dart';
+import 'package:visual_graphs/helpers/functions/pick_starting_vertex.dart';
 import 'package:visual_graphs/widgets/components/edge_grid.dart';
 import 'package:visual_graphs/widgets/components/edge_widget.dart';
 import 'package:visual_graphs/widgets/components/empty_text.dart';
+import 'package:visual_graphs/widgets/components/starting_vertex.dart';
 import 'package:visual_graphs/widgets/components/white_border.dart';
 
-class KruskalWidget extends StatefulWidget {
-  const KruskalWidget({super.key});
+class PrimsWidget extends StatefulWidget {
+  const PrimsWidget({super.key});
 
   @override
-  State<KruskalWidget> createState() => _KruskalWidgetState();
+  State<PrimsWidget> createState() => _PrimsWidgetState();
 }
 
-class _KruskalWidgetState extends State<KruskalWidget> {
-  KruskalsAlgorithm kruskal = KruskalsAlgorithm();
+class _PrimsWidgetState extends State<PrimsWidget> {
+  LazyPrimsAlgorithm prims = LazyPrimsAlgorithm();
 
   @override
   Widget build(BuildContext context) {
@@ -24,6 +26,16 @@ class _KruskalWidgetState extends State<KruskalWidget> {
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
+        const Text(
+          "Starting Vertex:",
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+          ),
+        ),
+        const SizedBox(height: 10),
+        const StartingVertex(),
+        const SizedBox(height: 20),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           mainAxisSize: MainAxisSize.max,
@@ -47,7 +59,7 @@ class _KruskalWidgetState extends State<KruskalWidget> {
                     height: 60,
                     width: 60,
                     child: ValueListenableBuilder(
-                      valueListenable: kruskal.weightNotifier,
+                      valueListenable: prims.weightNotifier,
                       builder: (context, weight, child) {
                         return Center(
                           child: Text(
@@ -82,7 +94,7 @@ class _KruskalWidgetState extends State<KruskalWidget> {
                     width: 180,
                     height: 60,
                     child: ValueListenableBuilder(
-                      valueListenable: kruskal.currentEdge,
+                      valueListenable: prims.currentEdge,
                       builder: (context, value, child) {
                         if (value == null) return const EmptyText();
                         return EdgeWidget(edge: value);
@@ -96,6 +108,23 @@ class _KruskalWidgetState extends State<KruskalWidget> {
         ),
         const SizedBox(height: 20),
         const Text(
+          "Priority queue:",
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+          ),
+        ),
+        const SizedBox(height: 10),
+        WhiteBorder(
+          child: ListenableBuilder(
+            listenable: prims.pq,
+            builder: (context, child) {
+              return EdgeGrid(prims.pq.values, 2, 3, false);
+            },
+          ),
+        ),
+        const SizedBox(height: 20),
+        const Text(
           "Included Edges:",
           style: TextStyle(
             color: Colors.white,
@@ -105,9 +134,9 @@ class _KruskalWidgetState extends State<KruskalWidget> {
         const SizedBox(height: 10),
         WhiteBorder(
           child: ListenableBuilder(
-            listenable: kruskal.includedEdges,
+            listenable: prims.includedEdges,
             builder: (context, child) {
-              return EdgeGrid(kruskal.includedEdges.set, 2, 8, true);
+              return EdgeGrid(prims.includedEdges.set, 2, 3, true);
             },
           ),
         ),
@@ -120,23 +149,29 @@ class _KruskalWidgetState extends State<KruskalWidget> {
           children: [
             FilledButton(
               onPressed: () {
-                if (kruskal.isRunning) {
+                if (prims.isRunning) {
                   ScaffoldMessenger.of(context).clearSnackBars();
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text("kruskal's Algorithm is already running"),
+                      content: Text("Prim's Algorithm is already running"),
                     ),
                   );
                   return;
                 }
-                kruskal.start();
+
+                if (Globals.game.graph.pickedVertexNotifier.value == null) {
+                  pickStartingVertex(context);
+                  return;
+                }
+
+                prims.start(Globals.game.graph.pickedVertexNotifier.value!);
               },
-              child: const Text("Start Kruskal"),
+              child: const Text("Start Prim's"),
             ),
             ElevatedButton(
               onPressed: () {
                 Globals.game.resetGraphColors();
-                kruskal.clear();
+                prims.clear();
               },
               child: const Text("Reset"),
             ),

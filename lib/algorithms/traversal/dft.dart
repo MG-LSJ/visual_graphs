@@ -6,13 +6,11 @@ import 'package:visual_graphs/helpers/notifiers/stack_notifier.dart';
 class DepthFirstTraversal extends Traversal {
   final StackNotifier<Pair<Vertex, Edge?>> stack = StackNotifier();
 
-  DepthFirstTraversal({required super.graph});
-
   @override
-  void start(Vertex startVertex) async {
-    clear();
-    isRunning = true;
-    await see(Pair(startVertex, null));
+  void start([Vertex? startVertex]) async {
+    initialize();
+
+    await see(Pair(startVertex!, null));
     await Future.delayed(delay);
 
     while (stack.isNotEmpty) {
@@ -28,7 +26,7 @@ class DepthFirstTraversal extends Traversal {
       }
       await Future.delayed(delay);
     }
-    await end();
+    await finalize();
   }
 
   @override

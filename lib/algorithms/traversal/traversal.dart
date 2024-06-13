@@ -1,24 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:visual_graphs/algorithms/algorithm.dart';
 import 'package:visual_graphs/graph_editor/globals.dart';
 import 'package:visual_graphs/graph_editor/models/graph.dart';
 import 'package:visual_graphs/helpers/data_structures/pair.dart';
 import 'package:visual_graphs/helpers/notifiers/set_notifier.dart';
 
-abstract class Traversal {
-  final Graph graph;
+abstract class Traversal extends Algorithm {
   final SetNotifier<Vertex> visited = SetNotifier();
   final SetNotifier<Vertex> seen = SetNotifier();
-  final delay = const Duration(seconds: 1);
-  bool isRunning = false;
-
   final ValueNotifier<Vertex?> visitingVertexNotifier = ValueNotifier(null);
+  final delay = const Duration(seconds: 1);
 
-  Traversal({required this.graph});
+  @override
+  void start([Vertex startVertex]);
 
-  void start(Vertex startVertex);
-
-  Future end() async {
-    isRunning = false;
+  @override
+  Future finalize() async {
     if (visitingVertexNotifier.value != null) {
       visitingVertexNotifier.value?.component
         ?..radius = Globals.defaultVertexRadius
@@ -27,9 +24,9 @@ abstract class Traversal {
           Colors.lightGreen,
           Colors.lightGreenAccent,
         );
-
       visitingVertexNotifier.value = null;
     }
+    super.finalize();
   }
 
   Future see(Pair<Vertex, Edge?> pair) async {
@@ -67,10 +64,11 @@ abstract class Traversal {
     visited.add(pair.first);
   }
 
+  @override
   void clear() {
+    super.clear();
     visited.clear();
     seen.clear();
-    isRunning = false;
     visitingVertexNotifier.value = null;
   }
 

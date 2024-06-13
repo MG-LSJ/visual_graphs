@@ -26,7 +26,7 @@ class _BFTWidgetState extends State<BFTWidget> {
   @override
   void initState() {
     super.initState();
-    bft = BreadthFirstTraversal(graph: Globals.game.graph);
+    bft = BreadthFirstTraversal();
   }
 
   @override
@@ -49,7 +49,7 @@ class _BFTWidgetState extends State<BFTWidget> {
           ),
         ),
         const SizedBox(height: 10),
-        StartingVertex(vertexWidgets: vertexWidgets),
+        const StartingVertex(),
         const SizedBox(height: 20),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -177,9 +177,6 @@ class _BFTWidgetState extends State<BFTWidget> {
                   return;
                 }
 
-                Globals.game.gameMode = GameMode.lockedMode;
-
-                Globals.game.resetGraphColors();
                 bft.start(Globals.game.graph.pickedVertexNotifier.value!);
               },
               child: const Text("Start BFT"),
@@ -189,7 +186,6 @@ class _BFTWidgetState extends State<BFTWidget> {
                 Globals.game.resetGraphColors();
                 Globals.game.graph.pickedVertexNotifier.value = null;
                 bft.clear();
-                setState(() {});
               },
               child: const Text("Reset"),
             ),

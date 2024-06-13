@@ -3,11 +3,13 @@ import 'package:visual_graphs/graph_editor/globals.dart';
 import 'package:visual_graphs/widgets/bft_widget.dart';
 import 'package:visual_graphs/widgets/dft_widget.dart';
 import 'package:visual_graphs/widgets/kruskal_widget.dart';
+import 'package:visual_graphs/widgets/prims_widget.dart';
 
 enum Algorithms {
   bft,
   dft,
   kruskal,
+  prims,
 }
 
 class Sidebar extends StatefulWidget {
@@ -63,9 +65,14 @@ class _SidebarState extends State<Sidebar> {
                             value: Algorithms.dft,
                             label: "Depth First Traversal",
                           ),
-                          DropdownMenuEntry(
-                              value: Algorithms.kruskal,
-                              label: "Kruskal's Algorithm")
+                          DropdownMenuEntry<Algorithms>(
+                            value: Algorithms.kruskal,
+                            label: "Kruskal's Algorithm",
+                          ),
+                          DropdownMenuEntry<Algorithms>(
+                            value: Algorithms.prims,
+                            label: "Prim's Algorithm",
+                          ),
                         ],
                       ),
                     ),
@@ -118,6 +125,8 @@ class _SidebarState extends State<Sidebar> {
         return DFTWidget(key: childKey);
       case Algorithms.kruskal:
         return KruskalWidget(key: childKey);
+      case Algorithms.prims:
+        return PrimsWidget(key: childKey);
     }
   }
 }

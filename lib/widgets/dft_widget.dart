@@ -26,7 +26,7 @@ class _DFTWidgetState extends State<DFTWidget> {
   @override
   void initState() {
     super.initState();
-    dft = DepthFirstTraversal(graph: Globals.game.graph);
+    dft = DepthFirstTraversal();
   }
 
   @override
@@ -49,7 +49,7 @@ class _DFTWidgetState extends State<DFTWidget> {
           ),
         ),
         const SizedBox(height: 10),
-        StartingVertex(vertexWidgets: vertexWidgets),
+        const StartingVertex(),
         const SizedBox(height: 20),
         Row(
           mainAxisSize: MainAxisSize.max,
@@ -183,9 +183,6 @@ class _DFTWidgetState extends State<DFTWidget> {
                   return;
                 }
 
-                Globals.game.gameMode = GameMode.lockedMode;
-
-                Globals.game.resetGraphColors();
                 dft.start(Globals.game.graph.pickedVertexNotifier.value!);
               },
               child: const Text("Start DFT"),

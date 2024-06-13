@@ -4,8 +4,10 @@ import 'package:visual_graphs/widgets/components/edge_widget.dart';
 import 'package:visual_graphs/widgets/components/empty_text.dart';
 
 class EdgeGrid extends StatefulWidget {
-  const EdgeGrid(this.edges, this.colCount, this.rowCount, {super.key});
+  const EdgeGrid(this.edges, this.colCount, this.rowCount, this.scrollToLast,
+      {super.key});
 
+  final bool scrollToLast;
   final int colCount;
   final int rowCount;
   final Iterable<Edge> edges;
@@ -33,7 +35,7 @@ class _EdgeGridState extends State<EdgeGrid> {
   @override
   Widget build(BuildContext context) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_scrollController.hasClients) {
+      if (widget.scrollToLast && _scrollController.hasClients) {
         _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
       }
     });

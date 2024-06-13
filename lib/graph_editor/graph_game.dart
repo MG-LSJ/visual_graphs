@@ -89,6 +89,16 @@ class GraphGame extends FlameGame
     refreshGraphComponents();
   }
 
+  void greyOutGraphComponents() {
+    for (var vertex in Globals.game.graph.vertices) {
+      vertex.component.setColors(Colors.grey.shade800, Colors.grey.shade800);
+    }
+    for (var edge in Globals.game.graph.edges) {
+      edge.component.setColors(Colors.grey.shade800, Colors.grey.shade800);
+    }
+    refreshGraphComponents();
+  }
+
   void refreshGraphComponents() {
     // ignore: invalid_use_of_internal_member
     world.children.clear();

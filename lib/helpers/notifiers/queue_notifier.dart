@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:visual_graphs/helpers/data_structures/queue.dart';
+import 'dart:collection';
 
 class QueueNotifier<T> with ChangeNotifier {
-  final QueueDS<T> _queue = QueueDS();
+  final Queue<T> _queue = Queue();
 
   void enqueue(T value) {
-    _queue.enqueue(value);
+    _queue.addLast(value);
     notifyListeners();
   }
 
   T dequeue() {
-    final value = _queue.dequeue();
+    final value = _queue.removeFirst();
     notifyListeners();
     return value;
   }
@@ -20,7 +20,7 @@ class QueueNotifier<T> with ChangeNotifier {
     notifyListeners();
   }
 
-  List<T> get queue => _queue.queue;
+  List<T> get queue => _queue.toList();
 
   bool get isEmpty => _queue.isEmpty;
   bool get isNotEmpty => _queue.isNotEmpty;
