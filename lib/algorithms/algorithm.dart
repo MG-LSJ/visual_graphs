@@ -3,6 +3,7 @@ import 'package:visual_graphs/graph_editor/models/graph.dart';
 
 abstract class Algorithm {
   bool isRunning = false;
+  bool isCompleted = false;
 
   final Graph graph = Globals.game.graph;
 
@@ -17,9 +18,11 @@ abstract class Algorithm {
 
   void finalize() {
     isRunning = false;
+    isCompleted = true;
   }
 
   void clear() {
+    isCompleted = false;
     isRunning = false;
   }
 }

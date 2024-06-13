@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:visual_graphs/graph_editor/models/graph.dart';
-import 'package:visual_graphs/widgets/components/animate_vertex.dart';
+import 'package:visual_graphs/widgets/components/animate_move.dart';
 import 'package:visual_graphs/widgets/components/empty_text.dart';
 
 class VertexStack extends StatefulWidget {

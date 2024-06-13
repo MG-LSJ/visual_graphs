@@ -1,24 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:visual_graphs/graph_editor/models/graph.dart';
 import 'package:visual_graphs/widgets/components/animate_move.dart';
-import 'package:visual_graphs/widgets/components/edge_widget.dart';
 import 'package:visual_graphs/widgets/components/empty_text.dart';
+import 'package:visual_graphs/widgets/components/vertex_widget.dart';
 
-class EdgeAnimatedGrid extends StatefulWidget {
-  const EdgeAnimatedGrid(
-      this.edges, this.colCount, this.rowCount, this.scrollToLast,
+class VertexAnimatedGrid extends StatefulWidget {
+  const VertexAnimatedGrid(
+      this.vertices, this.vertexWidgets, this.colCount, this.rowCount,
       {super.key});
 
-  final bool scrollToLast;
   final int colCount;
   final int rowCount;
-  final Iterable<Edge> edges;
+  final Iterable<Vertex> vertices;
+  final Map<int, Widget> vertexWidgets;
 
   @override
-  State<EdgeAnimatedGrid> createState() => _EdgeAnimatedGridState();
+  State<VertexAnimatedGrid> createState() => _VertexAnimatedGridState();
 }
 
-class _EdgeAnimatedGridState extends State<EdgeAnimatedGrid> {
+class _VertexAnimatedGridState extends State<VertexAnimatedGrid> {
   final double rowHeight = 60;
 
   final ScrollController _scrollController = ScrollController();
@@ -37,7 +37,7 @@ class _EdgeAnimatedGridState extends State<EdgeAnimatedGrid> {
   @override
   Widget build(BuildContext context) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (widget.scrollToLast && _scrollController.hasClients) {
+      if (_scrollController.hasClients) {
         _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
       }
     });
@@ -55,24 +55,46 @@ class _EdgeAnimatedGridState extends State<EdgeAnimatedGrid> {
           childAspectRatio: 1,
           mainAxisExtent: rowHeight,
         ),
-        children: getChildren(),
+        children: getVertexWidgets(),
       ),
     );
   }
 
-  List<Widget> getChildren() {
-    if (widget.edges.isEmpty) return [const EmptyText()];
+  List<Widget> getVertexWidgets() {
+    if (widget.vertices.isEmpty) return [const EmptyText()];
     List<Widget> children = [];
-    for (final edge in widget.edges) {
-      children.add(EdgeWidget(edge: edge));
+
+    for (final vertex in widget.vertices) {
+      children.add(widget.vertexWidgets[vertex.id] ?? Container());
     }
-    int last = children.length - 1;
+
+    int last = widget.vertices.length - 1;
     children[last] = AnimatedMove(
-      initialOffset:
-          last.isEven ? const Offset(0, 100) : const Offset(-150, 100),
+      initialOffset: getOffset(last),
       duration: const Duration(milliseconds: 200),
-      child: EdgeWidget(edge: widget.edges.last),
+      child: VertexWidget(widget.vertices.last),
     );
     return children;
+  }
+
+  Offset getOffset(int last) {
+    last %= widget.colCount;
+
+    switch (last) {
+      case 0:
+        return const Offset(20, 100);
+      case 1:
+        return const Offset(-20, 100);
+      case 2:
+        return const Offset(-80, 100);
+      case 3:
+        return const Offset(-140, 100);
+      case 4:
+        return const Offset(-200, 100);
+      case 5:
+        return const Offset(-260, 100);
+      default:
+        return const Offset(-320, 100);
+    }
   }
 }

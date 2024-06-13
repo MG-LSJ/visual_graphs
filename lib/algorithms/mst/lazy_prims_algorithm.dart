@@ -26,6 +26,7 @@ class LazyPrimsAlgorithm extends MinimumSpanningTree {
   }
 
   Future visit(Vertex vertex) async {
+    currentEdge.value = null;
     vertex.component.setColors(Colors.green, Colors.greenAccent);
     visited.add(vertex);
     await Future.delayed(const Duration(milliseconds: 100));
@@ -84,6 +85,7 @@ class LazyPrimsAlgorithm extends MinimumSpanningTree {
       Colors.black,
       Colors.black,
     );
+    currentEdge.value = null;
   }
 
   @override

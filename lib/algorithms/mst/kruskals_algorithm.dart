@@ -7,6 +7,7 @@ import 'package:visual_graphs/helpers/data_structures/union_find.dart';
 class KruskalsAlgorithm extends MinimumSpanningTree {
   ColoredUnionFind<Vertex> unionFind = ColoredUnionFind();
   List<Edge> edges = [];
+  int index = 0;
 
   @override
   void start() async {
@@ -14,7 +15,11 @@ class KruskalsAlgorithm extends MinimumSpanningTree {
     edges = graph.edges..sort((a, b) => a.weight.compareTo(b.weight));
 
     for (var edge in edges) {
+      index++;
+      await Future.delayed(const Duration(milliseconds: 500));
       await checkEdge(currentEdge.value = edge);
+
+      if (edgeCount == graph.vertices.length - 1) break;
     }
 
     finalize();
@@ -25,7 +30,7 @@ class KruskalsAlgorithm extends MinimumSpanningTree {
   }
 
   Future checkEdge(Edge edge) async {
-    await Future.delayed(const Duration(milliseconds: 500));
+    await Future.delayed(const Duration(milliseconds: 150));
     edge.component
       ..edgeWidth += 2
       ..setColors(Colors.white, Colors.white);
@@ -37,9 +42,16 @@ class KruskalsAlgorithm extends MinimumSpanningTree {
       ..radius = Globals.defaultVertexRadius + 5
       ..drawBorder = true;
 
-    await Future.delayed(const Duration(milliseconds: 500));
-
+    await Future.delayed(const Duration(milliseconds: 400));
     edge.component.edgeWidth = Globals.defaultEdgeWidth;
+
+    if (!edge.isSelfEdge && !makesCycle(edge)) {
+      await Future.delayed(const Duration(milliseconds: 400));
+      includeEdge(edge);
+    } else {
+      edge.component.setColors(Colors.black, Colors.black);
+    }
+
     edge.from.component
       ..radius = Globals.defaultVertexRadius
       ..drawBorder = false;
@@ -47,18 +59,14 @@ class KruskalsAlgorithm extends MinimumSpanningTree {
       ..radius = Globals.defaultVertexRadius
       ..drawBorder = false;
 
-    if (!edge.isSelfEdge && !makesCycle(edge)) {
-      includeEdge(edge);
-    } else {
-      edge.component.setColors(Colors.black, Colors.black);
-    }
-
     updateColors();
   }
 
   void includeEdge(Edge edge) {
+    edgeCount++;
     unionFind.union(edge.from, edge.to);
     includedEdges.add(edge);
+    currentEdge.value = null;
     weightNotifier.value += edge.weight;
   }
 
@@ -76,5 +84,6 @@ class KruskalsAlgorithm extends MinimumSpanningTree {
     super.clear();
     edges.clear();
     unionFind.clear();
+    index = 0;
   }
 }

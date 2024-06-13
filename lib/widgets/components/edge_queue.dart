@@ -4,9 +4,8 @@ import 'package:visual_graphs/widgets/components/animate_move.dart';
 import 'package:visual_graphs/widgets/components/edge_widget.dart';
 import 'package:visual_graphs/widgets/components/empty_text.dart';
 
-class EdgeAnimatedGrid extends StatefulWidget {
-  const EdgeAnimatedGrid(
-      this.edges, this.colCount, this.rowCount, this.scrollToLast,
+class EdgeQueue extends StatefulWidget {
+  const EdgeQueue(this.edges, this.colCount, this.rowCount, this.scrollToLast,
       {super.key});
 
   final bool scrollToLast;
@@ -15,10 +14,10 @@ class EdgeAnimatedGrid extends StatefulWidget {
   final Iterable<Edge> edges;
 
   @override
-  State<EdgeAnimatedGrid> createState() => _EdgeAnimatedGridState();
+  State<EdgeQueue> createState() => _EdgeQueueState();
 }
 
-class _EdgeAnimatedGridState extends State<EdgeAnimatedGrid> {
+class _EdgeQueueState extends State<EdgeQueue> {
   final double rowHeight = 60;
 
   final ScrollController _scrollController = ScrollController();
@@ -62,17 +61,25 @@ class _EdgeAnimatedGridState extends State<EdgeAnimatedGrid> {
 
   List<Widget> getChildren() {
     if (widget.edges.isEmpty) return [const EmptyText()];
+
     List<Widget> children = [];
+
+    int i = 0;
     for (final edge in widget.edges) {
-      children.add(EdgeWidget(edge: edge));
+      children.add(
+        AnimatedMove(
+          initialOffset:
+              i.isEven ? const Offset(150, 0) : const Offset(-150, 100),
+          duration: Duration(milliseconds: 200 + i * 50),
+          // ?
+          // : Duration(milliseconds: 300 + i * 10),
+          scale: false,
+          child: EdgeWidget(edge: edge),
+        ),
+      );
+      i++;
     }
-    int last = children.length - 1;
-    children[last] = AnimatedMove(
-      initialOffset:
-          last.isEven ? const Offset(0, 100) : const Offset(-150, 100),
-      duration: const Duration(milliseconds: 200),
-      child: EdgeWidget(edge: widget.edges.last),
-    );
+
     return children;
   }
 }

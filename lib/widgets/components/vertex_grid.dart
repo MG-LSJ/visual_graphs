@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:visual_graphs/graph_editor/models/graph.dart';
 import 'package:visual_graphs/widgets/components/empty_text.dart';
 
-class VertexListGrid extends StatefulWidget {
-  const VertexListGrid(
+class VertexGrid extends StatefulWidget {
+  const VertexGrid(
       this.vertices, this.vertexWidgets, this.colCount, this.rowCount,
       {super.key});
 
@@ -13,10 +13,10 @@ class VertexListGrid extends StatefulWidget {
   final Map<int, Widget> vertexWidgets;
 
   @override
-  State<VertexListGrid> createState() => _VertexListGridState();
+  State<VertexGrid> createState() => _VertexGridState();
 }
 
-class _VertexListGridState extends State<VertexListGrid> {
+class _VertexGridState extends State<VertexGrid> {
   final double rowHeight = 60;
 
   final ScrollController _scrollController = ScrollController();

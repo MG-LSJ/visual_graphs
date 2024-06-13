@@ -24,6 +24,7 @@ abstract class Traversal extends Algorithm {
           Colors.lightGreen,
           Colors.lightGreenAccent,
         );
+      visited.add(visitingVertexNotifier.value!);
       visitingVertexNotifier.value = null;
     }
     super.finalize();
@@ -39,7 +40,7 @@ abstract class Traversal extends Algorithm {
     seen.add(pair.first);
   }
 
-  Future visit(Pair pair) async {
+  Future visit(Pair<Vertex, Edge?> pair) async {
     if (pair.second != null && pair.second?.component != null) {
       pair.second?.component.setColors(Colors.lightGreen, Colors.lightGreen);
       await Future.delayed(const Duration(milliseconds: 100));
@@ -53,15 +54,15 @@ abstract class Traversal extends Algorithm {
           Colors.lightGreen,
           Colors.lightGreenAccent,
         );
+      visited.add(visitingVertexNotifier.value!);
     }
+
     visitingVertexNotifier.value = pair.first;
 
     pair.first.component
       ..radius = Globals.defaultVertexRadius + 5
       ..drawBorder = true
       ..setColors(Colors.green, Colors.greenAccent);
-
-    visited.add(pair.first);
   }
 
   @override

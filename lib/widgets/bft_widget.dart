@@ -4,11 +4,12 @@ import 'package:visual_graphs/graph_editor/globals.dart';
 import 'package:visual_graphs/graph_editor/models/graph.dart';
 import 'package:visual_graphs/helpers/functions/load_traversal_sample_graph.dart';
 import 'package:visual_graphs/helpers/functions/pick_starting_vertex.dart';
-import 'package:visual_graphs/widgets/components/animate_vertex.dart';
+import 'package:visual_graphs/widgets/components/animate_move.dart';
+import 'package:visual_graphs/widgets/components/vertex_animatted_grid.dart';
 import 'package:visual_graphs/widgets/components/vertex_widget.dart';
 import 'package:visual_graphs/widgets/components/empty_text.dart';
 import 'package:visual_graphs/widgets/components/starting_vertex.dart';
-import 'package:visual_graphs/widgets/components/vertex_list_grid.dart';
+import 'package:visual_graphs/widgets/components/vertex_grid.dart';
 import 'package:visual_graphs/widgets/components/vertex_queue.dart';
 import 'package:visual_graphs/widgets/components/white_border.dart';
 
@@ -50,6 +51,28 @@ class _BFTWidgetState extends State<BFTWidget> {
         ),
         const SizedBox(height: 10),
         const StartingVertex(),
+        const SizedBox(height: 20),
+        const Text(
+          "Visited: ",
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+          ),
+        ),
+        const SizedBox(height: 10),
+        WhiteBorder(
+          child: ListenableBuilder(
+            listenable: bft.visited,
+            builder: (context, child) {
+              return VertexAnimatedGrid(
+                bft.visitedVertices,
+                vertexWidgets,
+                6,
+                2,
+              );
+            },
+          ),
+        ),
         const SizedBox(height: 20),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -106,11 +129,15 @@ class _BFTWidgetState extends State<BFTWidget> {
                   ),
                   const SizedBox(height: 10),
                   WhiteBorder(
-                    // child: VertexQueue(bft.queue, vertexWidgets, 4),
                     child: ListenableBuilder(
                       listenable: bft.queue,
                       builder: (context, child) {
-                        return VertexQueue(bft.queueVertices, vertexWidgets, 4);
+                        return VertexQueue(
+                          bft.queueVertices,
+                          vertexWidgets,
+                          2,
+                          4,
+                        );
                       },
                     ),
                   ),
@@ -132,24 +159,7 @@ class _BFTWidgetState extends State<BFTWidget> {
           child: ListenableBuilder(
             listenable: bft.seen,
             builder: (context, child) {
-              return VertexListGrid(bft.seenVertices, vertexWidgets, 6, 2);
-            },
-          ),
-        ),
-        const SizedBox(height: 20),
-        const Text(
-          "Visited: ",
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 16,
-          ),
-        ),
-        const SizedBox(height: 10),
-        WhiteBorder(
-          child: ListenableBuilder(
-            listenable: bft.visited,
-            builder: (context, child) {
-              return VertexListGrid(bft.visitedVertices, vertexWidgets, 6, 2);
+              return VertexGrid(bft.seenVertices, vertexWidgets, 6, 2);
             },
           ),
         ),
